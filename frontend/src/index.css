@@ -1,0 +1,216 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap");
+
+:root {
+  --color-bg: #17141f;
+  --color-surface: #eef0f2;
+  --color-surface-dim: #d7dade;
+  --color-ink: #17141f;
+  --color-muted: #6b7280;
+  --color-accent: #e0122f;
+  --color-accent-dark: #96041a;
+  --color-caught: #f4c542;
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --radius: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 20% -10%, #241f33 0%, var(--color-bg) 55%);
+  color: var(--color-surface);
+  font-family: var(--font-body);
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.app__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  border-bottom: 3px solid var(--color-accent);
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+}
+
+.app__header h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.app__progress {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--color-caught);
+  margin: 0;
+}
+
+.app__status {
+  font-family: var(--font-mono);
+  color: var(--color-muted);
+  padding: 2rem 0;
+}
+
+.app__status--error {
+  color: var(--color-accent);
+}
+
+.pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.1rem;
+}
+
+.pokemon-card {
+  position: relative;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-radius: var(--radius);
+  padding: 1rem 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  filter: grayscale(1);
+  opacity: 0.55;
+  transition: filter 0.35s ease, opacity 0.35s ease, transform 0.2s ease;
+}
+
+.pokemon-card.is-caught {
+  filter: grayscale(0);
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--color-caught), 0 8px 24px -8px rgba(0, 0, 0, 0.6);
+}
+
+.pokemon-card:not(.is-caught):hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+
+.pokemon-card__sprite-wrap {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--color-surface-dim) 0%, transparent 72%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.pokemon-card__sprite {
+  width: 72px;
+  height: 72px;
+  image-rendering: pixelated;
+}
+
+.pokemon-card__id {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.pokemon-card__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: capitalize;
+  margin: 0.1rem 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.pokemon-card__types {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.pokemon-card__type-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+.pokemon-card__catch-button {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1.4rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.pokemon-card__catch-button:hover:not(:disabled) {
+  background: var(--color-accent-dark);
+}
+
+.pokemon-card__catch-button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.pokemon-card__catch-button:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--color-caught);
+  outline-offset: 2px;
+}
+
+.pokemon-card__status {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--color-accent-dark);
+  margin: 0;
+}
+
+.pokemon-card__feedback {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin: 0.4rem 0 0;
+}
+
+.pokemon-card__feedback--fail {
+  color: var(--color-accent-dark);
+}
+
+.pokemon-card__feedback--success {
+  color: #2f7a3d;
+}
+
+.pokemon-card__attempts {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--color-muted);
+  margin: 0.5rem 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pokemon-card {
+    transition: none;
+  }
+}
