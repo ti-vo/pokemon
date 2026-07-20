@@ -9,6 +9,7 @@
 const db = require("../db");
 
 const POKEAPI_BASE = "https://pokeapi.co/api/v2/pokemon";
+const POKEAPI_SPECIES_BASE = "https://pokeapi.co/api/v2/pokemon-species";
 const START_ID = 1;
 const END_ID = 20;
 
@@ -35,11 +36,24 @@ async function fetchPokemon(id) {
   return response.json();
 }
 
+// The species endpoint holds localized names (among other flavor data).
+// We only need the German entry from its `names` array here.
+async function fetchGermanName(id) {
+  const response = await fetch(`${POKEAPI_SPECIES_BASE}/${id}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch species ${id}: ${response.status}`);
+  }
+  const data = await response.json();
+  const germanEntry = data.names.find((n) => n.language.name === "de");
+  return germanEntry ? germanEntry.name : null;
+}
+
 const upsertStatement = db.prepare(`
-  INSERT INTO pokemon (id, name, sprite_url, types, catch_rate)
-  VALUES (@id, @name, @sprite_url, @types, @catch_rate)
+  INSERT INTO pokemon (id, name, name_de, sprite_url, types, catch_rate)
+  VALUES (@id, @name, @name_de, @sprite_url, @types, @catch_rate)
   ON CONFLICT(id) DO UPDATE SET
     name = excluded.name,
+    name_de = excluded.name_de,
     sprite_url = excluded.sprite_url,
     types = excluded.types,
     catch_rate = excluded.catch_rate
@@ -50,6 +64,7 @@ async function run() {
 
   for (let id = START_ID; id <= END_ID; id++) {
     const data = await fetchPokemon(id);
+    const nameDe = await fetchGermanName(id);
 
     const name = data.name;
     const spriteUrl = data.sprites?.front_default || null;
@@ -59,13 +74,14 @@ async function run() {
     upsertStatement.run({
       id,
       name,
+      name_de: nameDe,
       sprite_url: spriteUrl,
       types,
       catch_rate: catchRate,
     });
 
     console.log(
-      `  #${id} ${name} — base_experience=${data.base_experience}, catch_rate=${catchRate}`
+      `  #${id} ${name} (${nameDe}) — base_experience=${data.base_experience}, catch_rate=${catchRate}`
     );
   }
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { t, translateType, getPokemonName } from "../i18n.js";
 
 // Classic Pokemon type colors, used for the small type badges.
 // Not every type is needed for the first 20 Pokemon, but keeping the full
@@ -24,7 +25,7 @@ const TYPE_COLORS = {
   fairy: "#D685AD",
 };
 
-export default function PokemonCard({ pokemon, onCatchAttempt }) {
+export default function PokemonCard({ pokemon, language, onCatchAttempt }) {
   const [isRolling, setIsRolling] = useState(false);
   const [lastResult, setLastResult] = useState(null); // "success" | "fail" | null
 
@@ -54,7 +55,7 @@ export default function PokemonCard({ pokemon, onCatchAttempt }) {
       </div>
 
       <p className="pokemon-card__id">#{String(pokemon.id).padStart(3, "0")}</p>
-      <h3 className="pokemon-card__name">{pokemon.name}</h3>
+      <h3 className="pokemon-card__name">{getPokemonName(language, pokemon)}</h3>
 
       <div className="pokemon-card__types">
         {pokemon.types.map((type) => (
@@ -63,36 +64,36 @@ export default function PokemonCard({ pokemon, onCatchAttempt }) {
             className="pokemon-card__type-badge"
             style={{ backgroundColor: TYPE_COLORS[type] || "#888" }}
           >
-            {type}
+            {translateType(language, type)}
           </span>
         ))}
       </div>
 
       {pokemon.caught ? (
-        <p className="pokemon-card__status">Caught</p>
+        <p className="pokemon-card__status">{t(language, "caughtStatus")}</p>
       ) : (
         <button
           className="pokemon-card__catch-button"
           onClick={handleCatchClick}
           disabled={isRolling}
         >
-          {isRolling ? "..." : "Catch"}
+          {isRolling ? "..." : t(language, "catchButton")}
         </button>
       )}
 
       {lastResult === "fail" && (
         <p className="pokemon-card__feedback pokemon-card__feedback--fail">
-          It escaped!
+          {t(language, "escaped")}
         </p>
       )}
       {lastResult === "success" && (
         <p className="pokemon-card__feedback pokemon-card__feedback--success">
-          Caught!
+          {t(language, "caught")}
         </p>
       )}
 
       <p className="pokemon-card__attempts">
-        Attempts: {pokemon.attempts}
+        {t(language, "attempts", pokemon.attempts)}
       </p>
     </div>
   );

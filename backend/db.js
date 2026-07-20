@@ -15,6 +15,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS pokemon (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
+    name_de TEXT,
     sprite_url TEXT,
     types TEXT,
     catch_rate REAL NOT NULL DEFAULT 0.5
@@ -29,5 +30,15 @@ db.exec(`
     FOREIGN KEY (pokemon_id) REFERENCES pokemon(id)
   );
 `);
+
+// Migration for databases created before name_de existed: CREATE TABLE IF
+// NOT EXISTS above only applies to brand-new tables, so an already-existing
+// pokemon table needs the column added explicitly (SQLite has no
+// "ADD COLUMN IF NOT EXISTS", so we check first).
+const existingColumns = db.prepare("PRAGMA table_info(pokemon)").all();
+const hasNameDe = existingColumns.some((col) => col.name === "name_de");
+if (!hasNameDe) {
+  db.exec("ALTER TABLE pokemon ADD COLUMN name_de TEXT");
+}
 
 module.exports = db;

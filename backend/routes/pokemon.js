@@ -28,6 +28,7 @@ router.get("/", (req, res) => {
       `SELECT
          p.id,
          p.name,
+         p.name_de,
          p.sprite_url,
          p.types,
          p.catch_rate,
@@ -43,6 +44,7 @@ router.get("/", (req, res) => {
   const result = rows.map((row) => ({
     id: row.id,
     name: row.name,
+    nameDe: row.name_de,
     spriteUrl: row.sprite_url,
     types: row.types ? row.types.split(",") : [],
     caught: !!row.caught,

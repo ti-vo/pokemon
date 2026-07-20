@@ -54,11 +54,55 @@ body {
   margin: 0;
 }
 
+.app__header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .app__progress {
   font-family: var(--font-mono);
   font-size: 0.95rem;
   color: var(--color-caught);
   margin: 0;
+}
+
+.lang-switch {
+  display: flex;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.25rem;
+  border-radius: 999px;
+}
+
+.lang-switch__button {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-surface);
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  opacity: 0.55;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.lang-switch__button:hover {
+  opacity: 0.85;
+}
+
+.lang-switch__button.is-active {
+  opacity: 1;
+  background: var(--color-accent);
+}
+
+.lang-switch__code {
+  letter-spacing: 0.02em;
 }
 
 .app__status {
