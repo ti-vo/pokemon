@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# SQLite database files (generated locally, not versioned)
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment variables (falls später z.B. API-Keys/Config nötig werden)
+.env
+.env.local
+
+# OS-Dateien
+.DS_Store
+
+# Editor-Ordner
+.vscode/
+.idea/
+
+# Build-Output (Frontend, sobald vorhanden)
+frontend/dist/
+frontend/build/
