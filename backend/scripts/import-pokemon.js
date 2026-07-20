@@ -48,15 +48,32 @@ async function fetchGermanName(id) {
   return germanEntry ? germanEntry.name : null;
 }
 
+// PokeAPI returns stats as an array of {base_stat, stat: {name}}. We pick
+// out the six standard stats and store them as a compact JSON object.
+function extractStats(statsArray) {
+  const findStat = (statName) =>
+    statsArray.find((s) => s.stat.name === statName)?.base_stat ?? 0;
+
+  return {
+    hp: findStat("hp"),
+    attack: findStat("attack"),
+    defense: findStat("defense"),
+    specialAttack: findStat("special-attack"),
+    specialDefense: findStat("special-defense"),
+    speed: findStat("speed"),
+  };
+}
+
 const upsertStatement = db.prepare(`
-  INSERT INTO pokemon (id, name, name_de, sprite_url, types, catch_rate)
-  VALUES (@id, @name, @name_de, @sprite_url, @types, @catch_rate)
+  INSERT INTO pokemon (id, name, name_de, sprite_url, types, catch_rate, stats)
+  VALUES (@id, @name, @name_de, @sprite_url, @types, @catch_rate, @stats)
   ON CONFLICT(id) DO UPDATE SET
     name = excluded.name,
     name_de = excluded.name_de,
     sprite_url = excluded.sprite_url,
     types = excluded.types,
-    catch_rate = excluded.catch_rate
+    catch_rate = excluded.catch_rate,
+    stats = excluded.stats
 `);
 
 async function run() {
@@ -70,6 +87,7 @@ async function run() {
     const spriteUrl = data.sprites?.front_default || null;
     const types = data.types.map((t) => t.type.name).join(",");
     const catchRate = calculateCatchRate(data.base_experience || 0);
+    const stats = JSON.stringify(extractStats(data.stats));
 
     upsertStatement.run({
       id,
@@ -78,6 +96,7 @@ async function run() {
       sprite_url: spriteUrl,
       types,
       catch_rate: catchRate,
+      stats,
     });
 
     console.log(

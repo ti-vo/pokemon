@@ -27,6 +27,7 @@ export default function App() {
           ? {
               ...p,
               caught: result.success ? true : p.caught,
+              stats: result.success ? result.stats : p.stats,
               attempts: p.attempts + 1,
             }
           : p

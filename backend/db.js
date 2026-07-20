@@ -18,7 +18,8 @@ db.exec(`
     name_de TEXT,
     sprite_url TEXT,
     types TEXT,
-    catch_rate REAL NOT NULL DEFAULT 0.5
+    catch_rate REAL NOT NULL DEFAULT 0.5,
+    stats TEXT
   );
 
   CREATE TABLE IF NOT EXISTS catches (
@@ -31,14 +32,18 @@ db.exec(`
   );
 `);
 
-// Migration for databases created before name_de existed: CREATE TABLE IF
-// NOT EXISTS above only applies to brand-new tables, so an already-existing
-// pokemon table needs the column added explicitly (SQLite has no
-// "ADD COLUMN IF NOT EXISTS", so we check first).
+// Migration for databases created before name_de/stats existed: CREATE
+// TABLE IF NOT EXISTS above only applies to brand-new tables, so an
+// already-existing pokemon table needs new columns added explicitly
+// (SQLite has no "ADD COLUMN IF NOT EXISTS", so we check first).
 const existingColumns = db.prepare("PRAGMA table_info(pokemon)").all();
-const hasNameDe = existingColumns.some((col) => col.name === "name_de");
-if (!hasNameDe) {
+const columnNames = existingColumns.map((col) => col.name);
+
+if (!columnNames.includes("name_de")) {
   db.exec("ALTER TABLE pokemon ADD COLUMN name_de TEXT");
+}
+if (!columnNames.includes("stats")) {
+  db.exec("ALTER TABLE pokemon ADD COLUMN stats TEXT");
 }
 
 module.exports = db;

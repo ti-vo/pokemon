@@ -9,7 +9,7 @@ export const LANGUAGES = {
 
 const STRINGS = {
   en: {
-    title: "Pokemon Catch Tracker",
+    title: "My Pokémon",
     progress: (caught, total) => `${caught} / ${total} caught`,
     loading: "Loading Pokemon...",
     backendError: (message) =>
@@ -19,9 +19,25 @@ const STRINGS = {
     escaped: "It escaped!",
     caught: "Caught!",
     attempts: (count) => `Attempts: ${count}`,
+    stats: {
+      hp: "HP",
+      attack: "Attack",
+      defense: "Defense",
+      specialAttack: "Special Attack",
+      specialDefense: "Special Defense",
+      speed: "Speed",
+    },
+    statDescriptions: {
+      hp: "Hit Points: how much damage this Pokemon can take before fainting.",
+      attack: "How hard this Pokemon hits with physical moves.",
+      defense: "How well this Pokemon resists physical damage.",
+      specialAttack: "How hard this Pokemon hits with special moves (e.g. elemental attacks).",
+      specialDefense: "How well this Pokemon resists special damage.",
+      speed: "How fast this Pokemon is — higher speed usually means it attacks first.",
+    },
   },
   de: {
-    title: "Pokémon Fang-Tracker",
+    title: "Meine Pokémons",
     progress: (caught, total) => `${caught} / ${total} gefangen`,
     loading: "Pokémon werden geladen...",
     backendError: (message) =>
@@ -31,6 +47,22 @@ const STRINGS = {
     escaped: "Es ist entkommen!",
     caught: "Gefangen!",
     attempts: (count) => `Versuche: ${count}`,
+    stats: {
+      hp: "KP",
+      attack: "Angriff",
+      defense: "Verteidigung",
+      specialAttack: "Spezial-Angriff",
+      specialDefense: "Spezial-Verteidigung",
+      speed: "Initiative",
+    },
+    statDescriptions: {
+      hp: "Kraftpunkte: wie viel Schaden dieses Pokémon aushält, bevor es kampfunfähig wird.",
+      attack: "Wie stark dieses Pokémon mit physischen Attacken zuschlägt.",
+      defense: "Wie gut dieses Pokémon physischem Schaden widersteht.",
+      specialAttack: "Wie stark dieses Pokémon mit Spezial-Attacken zuschlägt (z. B. Elementarangriffe).",
+      specialDefense: "Wie gut dieses Pokémon Spezial-Schaden widersteht.",
+      speed: "Wie schnell dieses Pokémon ist — höhere Initiative bedeutet meist, dass es zuerst angreift.",
+    },
   },
 };
 
@@ -61,6 +93,17 @@ const TYPE_NAMES_DE = {
 export function t(language, key, ...args) {
   const entry = STRINGS[language]?.[key] ?? STRINGS.en[key];
   return typeof entry === "function" ? entry(...args) : entry;
+}
+
+export function getStatLabel(language, statKey) {
+  return STRINGS[language]?.stats?.[statKey] ?? STRINGS.en.stats[statKey];
+}
+
+export function getStatDescription(language, statKey) {
+  return (
+    STRINGS[language]?.statDescriptions?.[statKey] ??
+    STRINGS.en.statDescriptions[statKey]
+  );
 }
 
 export function translateType(language, type) {

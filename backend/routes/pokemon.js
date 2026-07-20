@@ -32,6 +32,7 @@ router.get("/", (req, res) => {
          p.sprite_url,
          p.types,
          p.catch_rate,
+         p.stats,
          COALESCE(c.caught, 0) AS caught,
          COALESCE(c.attempts, 0) AS attempts,
          c.caught_at
@@ -50,6 +51,9 @@ router.get("/", (req, res) => {
     caught: !!row.caught,
     attempts: row.attempts,
     caughtAt: row.caught_at,
+    // Stats are only revealed once the Pokemon has been caught — matches
+    // the "you don't know its stats until you've caught it" flavor.
+    stats: row.caught && row.stats ? JSON.parse(row.stats) : null,
   }));
 
   res.json(result);
@@ -96,6 +100,7 @@ router.post("/:id/catch", (req, res) => {
     success,
     catchRate: pokemon.catch_rate,
     roll,
+    stats: success && pokemon.stats ? JSON.parse(pokemon.stats) : null,
   });
 });
 

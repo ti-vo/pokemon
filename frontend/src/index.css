@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&family=Baloo+2:wght@700;800&display=swap");
 
 :root {
   --color-bg: #17141f;
@@ -11,6 +11,7 @@
   --color-caught: #f4c542;
 
   --font-display: "Space Grotesk", sans-serif;
+  --font-title: "Baloo 2", cursive;
   --font-body: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 
@@ -47,11 +48,19 @@ body {
 }
 
 .app__header h1 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: clamp(2rem, 5.5vw, 3.2rem);
   letter-spacing: -0.01em;
   margin: 0;
+  color: #ffde59;
+  -webkit-text-stroke: 3px #2b4fc7;
+  paint-order: stroke fill;
+  text-shadow:
+    0 3px 0 #1a3391,
+    0 6px 12px rgba(0, 0, 0, 0.45);
+  transform: rotate(-1.5deg);
+  display: inline-block;
 }
 
 .app__header-right {
@@ -117,7 +126,7 @@ body {
 
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1.1rem;
 }
 
@@ -148,8 +157,8 @@ body {
 }
 
 .pokemon-card__sprite-wrap {
-  width: 96px;
-  height: 96px;
+  width: 128px;
+  height: 128px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--color-surface-dim) 0%, transparent 72%);
   display: flex;
@@ -159,8 +168,8 @@ body {
 }
 
 .pokemon-card__sprite {
-  width: 72px;
-  height: 72px;
+  width: 100px;
+  height: 100px;
   image-rendering: pixelated;
 }
 
@@ -251,6 +260,50 @@ a:focus-visible {
   font-size: 0.65rem;
   color: var(--color-muted);
   margin: 0.5rem 0 0;
+}
+
+.pokemon-card__stats {
+  width: 100%;
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.pokemon-card__stat-row {
+  display: grid;
+  grid-template-columns: 4.6rem 1fr 1.8rem;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pokemon-card__stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--color-muted);
+  text-align: left;
+  line-height: 1.2;
+}
+
+.pokemon-card__stat-bar-track {
+  height: 5px;
+  background: var(--color-surface-dim);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pokemon-card__stat-bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-caught));
+  border-radius: 999px;
+}
+
+.pokemon-card__stat-value {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-align: right;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { t, translateType, getPokemonName } from "../i18n.js";
+import {
+  t,
+  translateType,
+  getPokemonName,
+  getStatLabel,
+  getStatDescription,
+} from "../i18n.js";
 
 // Classic Pokemon type colors, used for the small type badges.
 // Not every type is needed for the first 20 Pokemon, but keeping the full
@@ -24,6 +30,10 @@ const TYPE_COLORS = {
   steel: "#B7B7CE",
   fairy: "#D685AD",
 };
+
+// Rough cap used to size the stat bars (base stats among early Pokemon
+// rarely exceed this). Values above it just fill the bar completely.
+const STAT_BAR_CAP = 120;
 
 export default function PokemonCard({ pokemon, language, onCatchAttempt }) {
   const [isRolling, setIsRolling] = useState(false);
@@ -79,6 +89,30 @@ export default function PokemonCard({ pokemon, language, onCatchAttempt }) {
         >
           {isRolling ? "..." : t(language, "catchButton")}
         </button>
+      )}
+
+      {pokemon.caught && pokemon.stats && (
+        <div className="pokemon-card__stats">
+          {Object.entries(pokemon.stats).map(([statKey, value]) => (
+            <div key={statKey} className="pokemon-card__stat-row">
+              <span
+                className="pokemon-card__stat-label"
+                title={getStatDescription(language, statKey)}
+              >
+                {getStatLabel(language, statKey)}
+              </span>
+              <span className="pokemon-card__stat-bar-track">
+                <span
+                  className="pokemon-card__stat-bar-fill"
+                  style={{
+                    width: `${Math.min(100, (value / STAT_BAR_CAP) * 100)}%`,
+                  }}
+                />
+              </span>
+              <span className="pokemon-card__stat-value">{value}</span>
+            </div>
+          ))}
+        </div>
       )}
 
       {lastResult === "fail" && (
