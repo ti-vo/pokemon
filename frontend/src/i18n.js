@@ -19,6 +19,10 @@ const STRINGS = {
     escaped: "It escaped!",
     caught: "Caught!",
     attempts: (count) => `Attempts: ${count}`,
+    tabGallery: "Gallery",
+    tabArena: "Catch Arena",
+    arenaPlaceholder: (name) =>
+      name ? `Catch Arena for ${name} — coming soon.` : "Catch Arena — coming soon.",
     stats: {
       hp: "HP",
       attack: "Attack",
@@ -47,6 +51,10 @@ const STRINGS = {
     escaped: "Es ist entkommen!",
     caught: "Gefangen!",
     attempts: (count) => `Versuche: ${count}`,
+    tabGallery: "Galerie",
+    tabArena: "Catch-Arena",
+    arenaPlaceholder: (name) =>
+      name ? `Catch-Arena für ${name} — folgt in Kürze.` : "Catch-Arena — folgt in Kürze.",
     stats: {
       hp: "KP",
       attack: "Angriff",

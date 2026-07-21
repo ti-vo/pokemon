@@ -35,10 +35,18 @@ const TYPE_COLORS = {
 // rarely exceed this). Values above it just fill the bar completely.
 const STAT_BAR_CAP = 120;
 
-export default function PokemonCard({ pokemon, language, onCatchAttempt }) {
+export default function PokemonCard({
+  pokemon,
+  language,
+  onCatchClick,
+  onCatchAttempt,
+}) {
   const [isRolling, setIsRolling] = useState(false);
   const [lastResult, setLastResult] = useState(null); // "success" | "fail" | null
 
+  // Not called anymore now that the button opens the Catch Arena instead of
+  // rolling directly — kept here to be lifted into the Arena's real catch
+  // logic later.
   async function handleCatchClick() {
     setIsRolling(true);
     setLastResult(null);
@@ -84,7 +92,7 @@ export default function PokemonCard({ pokemon, language, onCatchAttempt }) {
       ) : (
         <button
           className="pokemon-card__catch-button"
-          onClick={handleCatchClick}
+          onClick={() => onCatchClick(pokemon)}
           disabled={isRolling}
         >
           {isRolling ? "..." : t(language, "catchButton")}
