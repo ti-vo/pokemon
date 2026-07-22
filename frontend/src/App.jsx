@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchPokemonList } from "./api.js";
 import PokemonCard from "./components/PokemonCard.jsx";
-import CatchArena from "./components/CatchArena.jsx";
+import WildZone from "./components/WildZone.jsx";
 import { LANGUAGES, t } from "./i18n.js";
 
 export default function App() {
@@ -9,8 +9,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
   const [language, setLanguage] = useState("en");
-  const [view, setView] = useState("gallery"); // "gallery" | "arena"
-  const [arenaPokemon, setArenaPokemon] = useState(null);
+  const [view, setView] = useState("gallery"); // "gallery" | "wildzone"
 
   useEffect(() => {
     fetchPokemonList()
@@ -19,9 +18,8 @@ export default function App() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  function handleCatchButtonClick(pokemon) {
-    setArenaPokemon(pokemon);
-    setView("arena");
+  function handleCatchButtonClick() {
+    setView("wildzone");
   }
 
   const caughtCount = pokemonList.filter((p) => p.caught).length;
@@ -44,13 +42,13 @@ export default function App() {
           <button
             type="button"
             role="tab"
-            aria-selected={view === "arena"}
+            aria-selected={view === "wildzone"}
             className={`view-tabs__button ${
-              view === "arena" ? "is-active" : ""
+              view === "wildzone" ? "is-active" : ""
             }`}
-            onClick={() => setView("arena")}
+            onClick={() => setView("wildzone")}
           >
-            {t(language, "tabArena")}
+            {t(language, "tabWildZone")}
           </button>
         </nav>
 
@@ -85,8 +83,8 @@ export default function App() {
         </div>
       </header>
 
-      {view === "arena" && (
-        <CatchArena language={language} pokemon={arenaPokemon} />
+      {view === "wildzone" && (
+        <WildZone language={language} pokemonList={pokemonList} />
       )}
 
       {view === "gallery" && (

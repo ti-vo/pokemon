@@ -44,8 +44,8 @@ export default function PokemonCard({
   const [isRolling, setIsRolling] = useState(false);
   const [lastResult, setLastResult] = useState(null); // "success" | "fail" | null
 
-  // Not called anymore now that the button opens the Catch Arena instead of
-  // rolling directly — kept here to be lifted into the Arena's real catch
+  // Not called anymore now that the button opens the Wildzone instead of
+  // rolling directly — kept here to be lifted into the Wildzone's real catch
   // logic later.
   async function handleCatchClick() {
     setIsRolling(true);
@@ -92,7 +92,7 @@ export default function PokemonCard({
       ) : (
         <button
           className="pokemon-card__catch-button"
-          onClick={() => onCatchClick(pokemon)}
+          onClick={onCatchClick}
           disabled={isRolling}
         >
           {isRolling ? "..." : t(language, "catchButton")}

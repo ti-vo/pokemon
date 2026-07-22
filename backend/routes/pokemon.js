@@ -42,19 +42,28 @@ router.get("/", (req, res) => {
     )
     .all();
 
-  const result = rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    nameDe: row.name_de,
-    spriteUrl: row.sprite_url,
-    types: row.types ? row.types.split(",") : [],
-    caught: !!row.caught,
-    attempts: row.attempts,
-    caughtAt: row.caught_at,
-    // Stats are only revealed once the Pokemon has been caught — matches
-    // the "you don't know its stats until you've caught it" flavor.
-    stats: row.caught && row.stats ? JSON.parse(row.stats) : null,
-  }));
+  const result = rows.map((row) => {
+    const parsedStats = row.stats ? JSON.parse(row.stats) : null;
+
+    return {
+      id: row.id,
+      name: row.name,
+      nameDe: row.name_de,
+      spriteUrl: row.sprite_url,
+      types: row.types ? row.types.split(",") : [],
+      catchRate: row.catch_rate,
+      // Speed is exposed even before catching — the Wildzone uses it to
+      // drive movement speed, unlike the other stats below.
+      baseSpeed: parsedStats?.speed ?? null,
+      caught: !!row.caught,
+      attempts: row.attempts,
+      caughtAt: row.caught_at,
+      // The rest of the stats are only revealed once the Pokemon has been
+      // caught — matches the "you don't know its stats until you've caught
+      // it" flavor.
+      stats: row.caught ? parsedStats : null,
+    };
+  });
 
   res.json(result);
 });
