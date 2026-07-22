@@ -103,9 +103,57 @@ body {
   height: 360px;
   overflow: hidden;
   border-radius: var(--radius);
+  background: #4a9fc9;
+}
+
+/* Himmel / sky: top band, full width. Must match SKY_HEIGHT_RATIO in
+   WildZone.jsx. */
+.wild-zone__zone--sky {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 35%;
   background:
-    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.08), transparent 60%),
-    var(--color-surface-dim);
+    radial-gradient(circle at 18% 60%, rgba(255, 255, 255, 0.9) 0 9px, transparent 10px),
+    radial-gradient(circle at 25% 52%, rgba(255, 255, 255, 0.9) 0 12px, transparent 13px),
+    radial-gradient(circle at 32% 60%, rgba(255, 255, 255, 0.9) 0 8px, transparent 9px),
+    radial-gradient(circle at 68% 38%, rgba(255, 255, 255, 0.8) 0 7px, transparent 8px),
+    radial-gradient(circle at 75% 32%, rgba(255, 255, 255, 0.8) 0 10px, transparent 11px),
+    radial-gradient(circle at 82% 40%, rgba(255, 255, 255, 0.8) 0 7px, transparent 8px),
+    linear-gradient(to bottom, #6cb8ec, #cdeaf8);
+}
+
+/* Gras / grass: fills the lower area except the water corner. Must match
+   WATER_WIDTH_RATIO in WildZone.jsx. */
+.wild-zone__zone--grass {
+  top: 35%;
+  left: 0;
+  bottom: 0;
+  right: 35%;
+  background-color: #3f9142;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='40' viewBox='0 0 24 40'%3E%3Cpath d='M3 40 C3 30 5 20 7 9' stroke='%232f7a33' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M9 40 C9 28 12 18 15 7' stroke='%2346a049' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M16 40 C16 30 18 22 20 11' stroke='%232f7a33' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M21 40 C21 32 23 24 24 15' stroke='%2358b95c' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"),
+    linear-gradient(to bottom, #4caf50, #357a38);
+  background-repeat: repeat;
+  background-size: 24px 40px, cover;
+}
+
+/* Wasser / water: bottom-right rectangle with a wave pattern. */
+.wild-zone__zone--water {
+  top: 35%;
+  right: 0;
+  bottom: 0;
+  width: 35%;
+  background-color: #2f7ea8;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='20' viewBox='0 0 40 20'%3E%3Cpath d='M0 9 Q10 2 20 9 T40 9' stroke='%23bfe3f0' stroke-width='2' fill='none' opacity='0.6'/%3E%3Cpath d='M0 15 Q10 8 20 15 T40 15' stroke='%23e8f6fb' stroke-width='2' fill='none' opacity='0.5'/%3E%3C/svg%3E"),
+    linear-gradient(to bottom, #6cc3e8, #2f7ea8);
+  background-repeat: repeat;
+  background-size: 40px 20px, cover;
+}
+
+.wild-zone__zone {
+  position: absolute;
 }
 
 .wild-zone__sprite {
@@ -117,6 +165,7 @@ body {
   image-rendering: pixelated;
   pointer-events: none;
   will-change: transform;
+  z-index: 1;
 }
 
 .app__header-right {

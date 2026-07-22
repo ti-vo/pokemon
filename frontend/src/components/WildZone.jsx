@@ -12,10 +12,22 @@ const MAX_STAT_SPEED = 110;
 const MIN_SPEED_PX_S = 40;
 const MAX_SPEED_PX_S = 160;
 
-// After a slot empties out (Pokemon left the zone), wait a random moment
-// before it refills — 0 or 1 active Pokemon at a time is fine.
-const MIN_RESPAWN_DELAY_MS = 1000;
-const MAX_RESPAWN_DELAY_MS = 4000;
+// After a slot empties out (Pokemon left the Wildzone), wait a random moment
+// before it refills — 0 or 1 active Pokemon at a time is common and fine.
+const MIN_RESPAWN_DELAY_MS = 2000;
+const MAX_RESPAWN_DELAY_MS = 6000;
+
+// How often the movement direction wobbles away from the straight
+// spawn-to-target line, and by how much.
+const MIN_ZIGZAG_INTERVAL_MS = 400;
+const MAX_ZIGZAG_INTERVAL_MS = 800;
+const MAX_ZIGZAG_DEVIATION_RAD = (25 * Math.PI) / 180;
+
+// The Himmel/Gras/Wasser split: sky is the top band, water is a bottom-right
+// rectangle, grass fills the rest of the lower area. Must match the
+// percentages used in index.css for the .wild-zone__zone--* rules.
+const SKY_HEIGHT_RATIO = 0.35;
+const WATER_WIDTH_RATIO = 0.35;
 
 let nextInstanceId = 0;
 
@@ -48,20 +60,148 @@ function randomRespawnDelay() {
   );
 }
 
-function spawnCreature(pool, zoneSize) {
+function randomZigzagInterval() {
+  return (
+    MIN_ZIGZAG_INTERVAL_MS +
+    Math.random() * (MAX_ZIGZAG_INTERVAL_MS - MIN_ZIGZAG_INTERVAL_MS)
+  );
+}
+
+function randomZigzagDeviation() {
+  return (Math.random() * 2 - 1) * MAX_ZIGZAG_DEVIATION_RAD;
+}
+
+// Mirror a direction across a vertical wall (flips the x-component) or a
+// horizontal wall (flips the y-component), used when bouncing off an
+// internal zone boundary.
+function reflectAngleX(angle) {
+  return Math.atan2(Math.sin(angle), -Math.cos(angle));
+}
+
+function reflectAngleY(angle) {
+  return Math.atan2(-Math.sin(angle), Math.cos(angle));
+}
+
+// Which of a zone rect's four edges coincide with the outer boundary of the
+// whole Wildzone, vs. bordering a neighboring zone. Pokemon bounce off the
+// latter and only despawn at the former.
+function classifyEdges(rect, zoneSize, epsilon = 0.5) {
+  return {
+    top: rect.y <= epsilon,
+    left: rect.x <= epsilon,
+    right: rect.x + rect.width >= zoneSize.width - epsilon,
+    bottom: rect.y + rect.height >= zoneSize.height - epsilon,
+  };
+}
+
+function computeZoneRects(zoneSize) {
+  const skyHeight = zoneSize.height * SKY_HEIGHT_RATIO;
+  const waterWidth = zoneSize.width * WATER_WIDTH_RATIO;
+  const lowerHeight = zoneSize.height - skyHeight;
+
+  const rects = {
+    sky: { x: 0, y: 0, width: zoneSize.width, height: skyHeight },
+    grass: {
+      x: 0,
+      y: skyHeight,
+      width: zoneSize.width - waterWidth,
+      height: lowerHeight,
+    },
+    water: {
+      x: zoneSize.width - waterWidth,
+      y: skyHeight,
+      width: waterWidth,
+      height: lowerHeight,
+    },
+  };
+
+  for (const rect of Object.values(rects)) {
+    rect.edges = classifyEdges(rect, zoneSize);
+  }
+
+  return rects;
+}
+
+// water -> water zone, flying -> sky zone, everything else -> grass zone.
+// Dual-type Pokemon are allowed in every zone either of their types maps to.
+function zonesForPokemon(pokemon) {
+  const zones = new Set();
+  for (const type of pokemon.types) {
+    if (type === "water") zones.add("water");
+    else if (type === "flying") zones.add("sky");
+    else zones.add("grass");
+  }
+  return [...zones];
+}
+
+function toEffectiveRect(rect) {
+  return {
+    minX: rect.x,
+    minY: rect.y,
+    maxX: rect.x + Math.max(0, rect.width - SPRITE_SIZE),
+    maxY: rect.y + Math.max(0, rect.height - SPRITE_SIZE),
+  };
+}
+
+function lerpRandom(min, max) {
+  return min + Math.random() * Math.max(0, max - min);
+}
+
+function randomEdgePoint(effRect) {
+  const edge = Math.floor(Math.random() * 4); // 0 top, 1 right, 2 bottom, 3 left
+  if (edge === 0) {
+    return { x: lerpRandom(effRect.minX, effRect.maxX), y: effRect.minY, edge: "top" };
+  }
+  if (edge === 1) {
+    return { x: effRect.maxX, y: lerpRandom(effRect.minY, effRect.maxY), edge: "right" };
+  }
+  if (edge === 2) {
+    return { x: lerpRandom(effRect.minX, effRect.maxX), y: effRect.maxY, edge: "bottom" };
+  }
+  return { x: effRect.minX, y: lerpRandom(effRect.minY, effRect.maxY), edge: "left" };
+}
+
+function oppositeEdgePoint(effRect, edge) {
+  if (edge === "top") {
+    return { x: lerpRandom(effRect.minX, effRect.maxX), y: effRect.maxY };
+  }
+  if (edge === "bottom") {
+    return { x: lerpRandom(effRect.minX, effRect.maxX), y: effRect.minY };
+  }
+  if (edge === "left") {
+    return { x: effRect.maxX, y: lerpRandom(effRect.minY, effRect.maxY) };
+  }
+  return { x: effRect.minX, y: lerpRandom(effRect.minY, effRect.maxY) };
+}
+
+function spawnCreature(pool, zoneRects, now) {
   const pokemon = pickWeightedPokemon(pool);
-  const maxX = Math.max(0, zoneSize.width - SPRITE_SIZE);
-  const maxY = Math.max(0, zoneSize.height - SPRITE_SIZE);
-  const angle = Math.random() * Math.PI * 2;
+  const allowedZones = zonesForPokemon(pokemon);
+  const zoneName = allowedZones[Math.floor(Math.random() * allowedZones.length)];
+  const zoneRect = zoneRects[zoneName];
+  const effRect = toEffectiveRect(zoneRect);
+
+  const spawnPoint = randomEdgePoint(effRect);
+  const targetPoint = oppositeEdgePoint(effRect, spawnPoint.edge);
+  const baseAngle = Math.atan2(
+    targetPoint.y - spawnPoint.y,
+    targetPoint.x - spawnPoint.x
+  );
   const speed = speedStatToPxPerSecond(pokemon.baseSpeed);
 
   return {
     instanceId: nextInstanceId++,
     pokemon,
-    x: Math.random() * maxX,
-    y: Math.random() * maxY,
-    vx: Math.cos(angle) * speed,
-    vy: Math.sin(angle) * speed,
+    zoneName,
+    effRect,
+    edges: zoneRect.edges,
+    x: spawnPoint.x,
+    y: spawnPoint.y,
+    baseAngle,
+    speed,
+    vx: Math.cos(baseAngle) * speed,
+    vy: Math.sin(baseAngle) * speed,
+    nextZigzagAt: now + randomZigzagInterval(),
   };
 }
 
@@ -97,6 +237,8 @@ export default function WildZone({ language, pokemonList }) {
   useEffect(() => {
     if (zoneSize.width === 0 || zoneSize.height === 0) return undefined;
 
+    const zoneRects = computeZoneRects(zoneSize);
+
     let frameId;
     let lastTime = performance.now();
     const respawnTimeouts = new Array(MAX_CREATURES).fill(null);
@@ -112,7 +254,11 @@ export default function WildZone({ language, pokemonList }) {
           excludePokemonId != null && pool.length > 1
             ? pool.filter((p) => p.id !== excludePokemonId)
             : pool;
-        slotsRef.current[slotIndex] = spawnCreature(candidates, zoneSize);
+        slotsRef.current[slotIndex] = spawnCreature(
+          candidates,
+          zoneRects,
+          performance.now()
+        );
       }, randomRespawnDelay());
     }
 
@@ -125,23 +271,68 @@ export default function WildZone({ language, pokemonList }) {
       const deltaSeconds = Math.min(0.05, (time - lastTime) / 1000);
       lastTime = time;
 
-      const maxX = Math.max(0, zoneSize.width - SPRITE_SIZE);
-      const maxY = Math.max(0, zoneSize.height - SPRITE_SIZE);
-
       for (let i = 0; i < slotsRef.current.length; i++) {
         const creature = slotsRef.current[i];
         if (!creature) continue;
 
-        const x = creature.x + creature.vx * deltaSeconds;
-        const y = creature.y + creature.vy * deltaSeconds;
+        let { vx, vy, nextZigzagAt, baseAngle } = creature;
+        if (time >= nextZigzagAt) {
+          const angle = baseAngle + randomZigzagDeviation();
+          vx = Math.cos(angle) * creature.speed;
+          vy = Math.sin(angle) * creature.speed;
+          nextZigzagAt = time + randomZigzagInterval();
+        }
 
-        if (x < 0 || x > maxX || y < 0 || y > maxY) {
-          // Reached the edge: the Pokemon leaves the Wildzone instead of
-          // bouncing back in.
+        let x = creature.x + vx * deltaSeconds;
+        let y = creature.y + vy * deltaSeconds;
+        const { effRect, edges } = creature;
+        let leavesWildzone = false;
+
+        if (x < effRect.minX) {
+          if (edges.left) {
+            leavesWildzone = true;
+          } else {
+            x = effRect.minX;
+            vx = -vx;
+            baseAngle = reflectAngleX(baseAngle);
+          }
+        } else if (x > effRect.maxX) {
+          if (edges.right) {
+            leavesWildzone = true;
+          } else {
+            x = effRect.maxX;
+            vx = -vx;
+            baseAngle = reflectAngleX(baseAngle);
+          }
+        }
+
+        if (!leavesWildzone) {
+          if (y < effRect.minY) {
+            if (edges.top) {
+              leavesWildzone = true;
+            } else {
+              y = effRect.minY;
+              vy = -vy;
+              baseAngle = reflectAngleY(baseAngle);
+            }
+          } else if (y > effRect.maxY) {
+            if (edges.bottom) {
+              leavesWildzone = true;
+            } else {
+              y = effRect.maxY;
+              vy = -vy;
+              baseAngle = reflectAngleY(baseAngle);
+            }
+          }
+        }
+
+        if (leavesWildzone) {
+          // Reached the outer boundary of the whole Wildzone: leave instead
+          // of bouncing back in.
           slotsRef.current[i] = null;
           scheduleRespawn(i, creature.pokemon.id);
         } else {
-          slotsRef.current[i] = { ...creature, x, y };
+          slotsRef.current[i] = { ...creature, x, y, vx, vy, nextZigzagAt, baseAngle };
         }
       }
 
@@ -158,6 +349,10 @@ export default function WildZone({ language, pokemonList }) {
 
   return (
     <div className="wild-zone" ref={zoneRef}>
+      <div className="wild-zone__zone wild-zone__zone--sky" />
+      <div className="wild-zone__zone wild-zone__zone--grass" />
+      <div className="wild-zone__zone wild-zone__zone--water" />
+
       {creatures.map(
         (creature) =>
           creature && (
