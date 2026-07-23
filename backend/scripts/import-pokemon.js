@@ -11,7 +11,7 @@ const db = require("../db");
 const POKEAPI_BASE = "https://pokeapi.co/api/v2/pokemon";
 const POKEAPI_SPECIES_BASE = "https://pokeapi.co/api/v2/pokemon-species";
 const START_ID = 1;
-const END_ID = 20;
+const END_ID = 100;
 
 // Maps base_experience to a catch_rate between MIN_RATE (hard) and
 // MAX_RATE (easy). Values are clamped so every Pokemon stays catchable.

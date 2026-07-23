@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { fetchPokemonList } from "./api.js";
 import PokemonCard from "./components/PokemonCard.jsx";
 import WildZone from "./components/WildZone.jsx";
+import { INITIAL_BALL_COUNTS } from "./components/BallSelector.jsx";
 import { LANGUAGES, t } from "./i18n.js";
+
+const BALL_REFILL_INTERVAL_MS = 10 * 60 * 1000;
 
 export default function App() {
   const [pokemonList, setPokemonList] = useState([]);
@@ -11,11 +14,37 @@ export default function App() {
   const [language, setLanguage] = useState("en");
   const [view, setView] = useState("gallery"); // "gallery" | "wildzone"
 
+  // Ball counts and the refill countdown live here (not in WildZone) so they
+  // keep running whether or not the Wildzone tab is currently mounted.
+  const [ballCounts, setBallCounts] = useState(INITIAL_BALL_COUNTS);
+  const [selectedBall, setSelectedBall] = useState("pokeball");
+  const [secondsUntilRefill, setSecondsUntilRefill] = useState(
+    BALL_REFILL_INTERVAL_MS / 1000
+  );
+  const nextRefillAtRef = useRef(Date.now() + BALL_REFILL_INTERVAL_MS);
+
   useEffect(() => {
     fetchPokemonList()
       .then((data) => setPokemonList(data))
       .catch((err) => setLoadError(err.message))
       .finally(() => setIsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const tick = () => {
+      const remainingMs = nextRefillAtRef.current - Date.now();
+      if (remainingMs <= 0) {
+        setBallCounts({ ...INITIAL_BALL_COUNTS });
+        nextRefillAtRef.current = Date.now() + BALL_REFILL_INTERVAL_MS;
+        setSecondsUntilRefill(BALL_REFILL_INTERVAL_MS / 1000);
+      } else {
+        setSecondsUntilRefill(Math.ceil(remainingMs / 1000));
+      }
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
   }, []);
 
   function handleCatchButtonClick() {
@@ -84,7 +113,14 @@ export default function App() {
       </header>
 
       {view === "wildzone" && (
-        <WildZone language={language} pokemonList={pokemonList} />
+        <WildZone
+          language={language}
+          pokemonList={pokemonList}
+          ballCounts={ballCounts}
+          selectedBall={selectedBall}
+          onSelectBall={setSelectedBall}
+          secondsUntilRefill={secondsUntilRefill}
+        />
       )}
 
       {view === "gallery" && (

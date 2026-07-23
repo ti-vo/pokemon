@@ -21,6 +21,10 @@ const STRINGS = {
     attempts: (count) => `Attempts: ${count}`,
     tabGallery: "Gallery",
     tabWildZone: "Wild Zone",
+    ball_pokeball: "Pokeball",
+    ball_superball: "Superball",
+    ball_masterball: "Masterball",
+    nextRefillIn: (formatted) => `Next refill in ${formatted}`,
     stats: {
       hp: "HP",
       attack: "Attack",
@@ -51,6 +55,10 @@ const STRINGS = {
     attempts: (count) => `Versuche: ${count}`,
     tabGallery: "Galerie",
     tabWildZone: "Wildzone",
+    ball_pokeball: "Pokeball",
+    ball_superball: "Superball",
+    ball_masterball: "Masterball",
+    nextRefillIn: (formatted) => `Nächste Auffüllung in ${formatted}`,
     stats: {
       hp: "KP",
       attack: "Angriff",

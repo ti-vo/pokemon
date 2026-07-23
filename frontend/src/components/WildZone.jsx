@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getPokemonName } from "../i18n.js";
+import BallSelector from "./BallSelector.jsx";
 
 const MAX_CREATURES = 2;
 const SPRITE_SIZE = 56;
@@ -23,7 +24,7 @@ const MIN_ZIGZAG_INTERVAL_MS = 400;
 const MAX_ZIGZAG_INTERVAL_MS = 800;
 const MAX_ZIGZAG_DEVIATION_RAD = (25 * Math.PI) / 180;
 
-// The Himmel/Gras/Wasser split: sky is the top band, water is a bottom-right
+// The sky/grass/water split: sky is the top band, water is a bottom-right
 // rectangle, grass fills the rest of the lower area. Must match the
 // percentages used in index.css for the .wild-zone__zone--* rules.
 const SKY_HEIGHT_RATIO = 0.35;
@@ -205,7 +206,14 @@ function spawnCreature(pool, zoneRects, now) {
   };
 }
 
-export default function WildZone({ language, pokemonList }) {
+export default function WildZone({
+  language,
+  pokemonList,
+  ballCounts,
+  selectedBall,
+  onSelectBall,
+  secondsUntilRefill,
+}) {
   const zoneRef = useRef(null);
   const [zoneSize, setZoneSize] = useState({ width: 0, height: 0 });
   const [creatures, setCreatures] = useState(
@@ -348,25 +356,35 @@ export default function WildZone({ language, pokemonList }) {
   }, [zoneSize]);
 
   return (
-    <div className="wild-zone" ref={zoneRef}>
-      <div className="wild-zone__zone wild-zone__zone--sky" />
-      <div className="wild-zone__zone wild-zone__zone--grass" />
-      <div className="wild-zone__zone wild-zone__zone--water" />
+    <div className="wild-zone-container">
+      <BallSelector
+        language={language}
+        ballCounts={ballCounts}
+        selectedBall={selectedBall}
+        onSelectBall={onSelectBall}
+        secondsUntilRefill={secondsUntilRefill}
+      />
 
-      {creatures.map(
-        (creature) =>
-          creature && (
-            <img
-              key={creature.instanceId}
-              className="wild-zone__sprite"
-              src={creature.pokemon.spriteUrl}
-              alt={getPokemonName(language, creature.pokemon)}
-              style={{
-                transform: `translate(${creature.x}px, ${creature.y}px)`,
-              }}
-            />
-          )
-      )}
+      <div className="wild-zone" ref={zoneRef}>
+        <div className="wild-zone__zone wild-zone__zone--sky" />
+        <div className="wild-zone__zone wild-zone__zone--grass" />
+        <div className="wild-zone__zone wild-zone__zone--water" />
+
+        {creatures.map(
+          (creature) =>
+            creature && (
+              <img
+                key={creature.instanceId}
+                className="wild-zone__sprite"
+                src={creature.pokemon.spriteUrl}
+                alt={getPokemonName(language, creature.pokemon)}
+                style={{
+                  transform: `translate(${creature.x}px, ${creature.y}px)`,
+                }}
+              />
+            )
+        )}
+      </div>
     </div>
   );
 }
